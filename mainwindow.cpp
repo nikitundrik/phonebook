@@ -2,9 +2,21 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 
-using namespace std;
+vector<Person> result;
 
-vector<string> result;
+Person::Person(string id, string name, string phone) {
+    this->id = id;
+    this->name = name;
+    this->phone = phone;
+}
+
+string Person::getName() {
+    return name;
+}
+
+string Person::getPhone() {
+    return phone;
+}
 
 static int callback(void *notUsed, int argc, char **argv, char **azColName) {
     for (int i = 0; i < argc; i++) {
@@ -16,10 +28,8 @@ static int callback(void *notUsed, int argc, char **argv, char **azColName) {
 }
 
 static int loadEntries(void *data, int argc, char **argv, char **azColName) {
-    for (int i = 0; i < argc; i++) {
-        cout << azColName[i] << ": " << argv[i] << endl;
-        result.push_back(string(argv[i]));
-    }
+    Person person = Person(argv[0], argv[1], argv[2]);
+    result.push_back(person);
     cout << "end" << endl;
     return 0;
 }
@@ -67,6 +77,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionAdd, &QAction::triggered, [=]() {
         addEntry();
     });
+    connect(ui->searchButton, &QPushButton::clicked, [=]() {
+        search();
+    });
 }
 
 void MainWindow::openDb() {
@@ -94,30 +107,34 @@ void MainWindow::showEntries() {
     } else {
         cout << "success" << endl;
     }
-    int toCreate = 0;
-    int column = 0;
     ui->entryTable->setRowCount(0);
-    for (string entry: result) {
-        if (toCreate == 0) {
-            ui->entryTable->setRowCount(ui->entryTable->rowCount() + 1);
-            column++;
-        } else {
-            QString itemText = QString::fromStdString(entry);
-            cout << itemText.toStdString() << endl;
-            QTableWidgetItem *tableItem = new QTableWidgetItem(itemText);
-            cout << toCreate - 1 << " " << column - 1 << endl;
-            ui->entryTable->setItem(column - 1, toCreate - 1, tableItem);
-        }
-        toCreate++;
-        if (toCreate == 3) {
-            toCreate = 0;
-        }
+    int row = 0;
+    for (Person entry: result) {
+        ui->entryTable->setRowCount(ui->entryTable->rowCount() + 1);
+        QTableWidgetItem *nameItem = new QTableWidgetItem(QString::fromStdString(entry.getName()));
+        QTableWidgetItem *phoneItem = new QTableWidgetItem(QString::fromStdString(entry.getPhone()));
+        ui->entryTable->setItem(row, 0, nameItem);
+        ui->entryTable->setItem(row, 1, phoneItem);
+        row++;
     }
 }
 
 void MainWindow::search() {
     QString searchQuery = ui->searchEdit->text();
     ui->entryTable->setRowCount(0);
+    int row = 0;
+    for (Person entry : result) {
+        string stdQuery = searchQuery.toStdString();
+        if (entry.getName().find(stdQuery) != string::npos ||
+                entry.getPhone().find(stdQuery) != string::npos) {
+            ui->entryTable->setRowCount(ui->entryTable->rowCount() + 1);
+            QTableWidgetItem *nameItem = new QTableWidgetItem(QString::fromStdString(entry.getName()));
+            QTableWidgetItem *phoneItem = new QTableWidgetItem(QString::fromStdString(entry.getPhone()));
+            ui->entryTable->setItem(row, 0, nameItem);
+            ui->entryTable->setItem(row, 1, phoneItem);
+            row++;
+        }
+    }
 }
 
 MainWindow::~MainWindow()

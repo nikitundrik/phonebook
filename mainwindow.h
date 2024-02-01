@@ -7,9 +7,12 @@
 #include <QInputDialog>
 #include <QDir>
 
+using namespace std;
+
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
+class Person;
 }
 QT_END_NAMESPACE
 
@@ -31,4 +34,20 @@ private:
     char *dbErr;
     int rc;
 };
+
+class Person {
+public:
+    Person(string id, string name, string phone);
+    /*void setId(string id);
+    void setName(string name);
+    void setPhone(string phone);*/
+    string getName();
+    string getPhone();
+
+private:
+    string id;
+    string name;
+    string phone;
+};
+
 #endif // MAINWINDOW_H
